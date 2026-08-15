@@ -6,6 +6,11 @@
 #include <variant>
 
 namespace libcurl {
+/**
+ * @class request
+ * @brief Represents an http request
+ *
+ */
 class request final {
    public: // ctors
     request(void) noexcept = default;
@@ -23,7 +28,36 @@ class request final {
 
     ~request(void) noexcept = default;
 
-   public: // methods
+   public:
+    // ----------- Lookup -----------
+
+    /**
+     * @brief Get the request target url
+     */
+    [[nodiscard]] auto getUrl(void) const noexcept -> std::string;
+
+    /**
+     * @brief Get the request method
+     */
+    [[nodiscard]] auto getMethod(void) const noexcept -> methods;
+
+    /**
+     * @brief Get the request header value
+     *
+     * @param header The header to lookup
+     */
+    [[nodiscard]] auto getHeader(
+        std::variant<headers, std::string_view> header) const noexcept
+        -> std::string;
+
+    /**
+     * @brief Get the request headers collection
+     */
+    [[nodiscard]] auto getHeaders(void) const noexcept
+        -> std::unordered_map<std::string, std::string>;
+
+    // ------------------------------
+
     // --------- Modifiers ----------
 
     /**
@@ -59,37 +93,6 @@ class request final {
             headers) noexcept -> void;
 
     // ------------------------------
-
-    // ----------- Lookup -----------
-
-    /**
-     * @brief Get the request target url
-     */
-    [[nodiscard]] auto getUrl(void) const noexcept -> std::string;
-
-    /**
-     * @brief Get the request method
-     */
-    [[nodiscard]] auto getMethod(void) const noexcept -> methods;
-
-    /**
-     * @brief Get the request header value
-     *
-     * @param header The header to lookup
-     */
-    [[nodiscard]] auto getHeader(
-        std::variant<headers, std::string_view> header) const noexcept
-        -> std::string;
-
-    /**
-     * @brief Get the request headers collection
-     */
-    [[nodiscard]] auto getHeaders(void) const noexcept
-        -> std::unordered_map<std::string, std::string>;
-
-    // ------------------------------
-
-   private: // methods
    private: // members
     std::string _url {};
     methods _method {methods::GET};

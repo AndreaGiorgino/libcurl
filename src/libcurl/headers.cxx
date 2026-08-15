@@ -216,7 +216,7 @@ auto getHeaderName(headers header) -> std::string {
             return "Attribution-Reporting-Register-Trigger";
         case headers::ACCEPT_CH:
             return "Accept-CH";
-        default:
+        default: // unreachable
             throw std::logic_error("Header not implemented");
     }
 }
