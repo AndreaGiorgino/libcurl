@@ -23,7 +23,39 @@ class request final {
 
     ~request(void) noexcept = default;
 
-   public:  // methods
+   public: // methods
+    /**
+     * @brief Set the request target url
+     *
+     * @param url The target url
+     */
+    auto setUrl(std::string_view url) noexcept -> void;
+
+    /**
+     * @brief Set the request method
+     *
+     * @param method The method
+     */
+    auto setMethod(methods method) noexcept -> void;
+
+    /**
+     * @brief Set/Add the request header
+     *
+     * @param header The header to set/add
+     * @param value The value to assign to the header
+     */
+    auto setHeader(std::variant<headers, std::string_view> header,
+        std::string_view value) noexcept -> void;
+
+    /**
+     * @brief Set/Add the request headers
+     *
+     * @param headers The values to assign to the headers
+     */
+    auto setHeaders(std::initializer_list<
+        std::pair<std::variant<headers, std::string_view>, std::string_view>>
+            headers) noexcept;
+
    private: // methods
    private: // members
 };
