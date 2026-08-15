@@ -71,4 +71,59 @@ enum class status_codes : std::uint16_t {
     NOT_EXTENDED                    = 510,
     NETWORK_AUTHENTICATION_REQUIRED = 511,
 };
+
+/**
+ * @brief Get the status code numeric value
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto getStatusCodeValue(status_codes statusCode) noexcept
+    -> std::uint16_t;
+
+/**
+ * @brief Get the string representation of the status code
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto getStatusCodeName(status_codes statusCode) -> std::string;
+
+/**
+ * @brief Check wether the status code represents an informational state
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto isStatusCodeInformational(status_codes statusCode) noexcept
+    -> bool;
+
+/**
+ * @brief Check wether the status code represents a success state
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto isStatusCodeSuccess(status_codes statusCode) noexcept
+    -> bool;
+
+/**
+ * @brief Check wether the status code represents a redirection error state
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto isStatusCodeRedirectionError(
+    status_codes statusCode) noexcept -> bool;
+
+/**
+ * @brief Check wether the status code represents a client error state
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto isStatusCodeClientError(status_codes statusCode) noexcept
+    -> bool;
+
+/**
+ * @brief Check wether the status code represents a server error state
+ *
+ * @param statusCode The status code
+ */
+[[nodiscard]] auto isStatusCodeServerError(status_codes statusCode) noexcept
+    -> bool;
 } // namespace libcurl
