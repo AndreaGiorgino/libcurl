@@ -55,7 +55,7 @@ class request final {
      */
     auto setHeaders(std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
-            headers) noexcept;
+            headers) noexcept -> void;
 
    private: // methods
    private: // members
