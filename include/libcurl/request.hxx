@@ -2,6 +2,7 @@
 
 #include <libcurl/headers.hxx>
 #include <libcurl/methods.hxx>
+#include <unordered_map>
 #include <variant>
 
 namespace libcurl {
@@ -58,5 +59,8 @@ class request final {
 
    private: // methods
    private: // members
+    std::string _url {};
+    methods _method {methods::GET};
+    std::unordered_map<std::string, std::string> _headers {};
 };
 } // namespace libcurl
