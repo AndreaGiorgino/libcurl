@@ -1,6 +1,14 @@
 #include <libcurl/response.hxx>
 
 namespace libcurl {
+response::response(status_codes statusCode,
+    std::initializer_list<
+        std::pair<std::variant<headers, std::string_view>, std::string_view>>
+        headers) noexcept
+    : _statusCode(statusCode) {
+    setHeaders(headers);
+}
+
 auto response::getStatusCode(void) const noexcept -> status_codes {
     return _statusCode;
 }
@@ -27,5 +35,31 @@ auto response::getHeader(
 auto response::getHeaders(void) const noexcept
     -> std::unordered_map<std::string, std::string> {
     return _headers;
+}
+
+auto response::setStatusCode(status_codes statusCode) noexcept -> void {
+    _statusCode = statusCode;
+}
+
+auto response::setHeader(std::variant<headers, std::string_view> header,
+    std::string_view value) noexcept -> void {
+    const auto name {std::visit(
+        [](const auto& header) -> std::string {
+            using clean_t = std::remove_cvref_t<decltype(header)>;
+
+            if constexpr (std::same_as<clean_t, headers>)
+                return getHeaderName(header);
+            else
+                return header.data();
+        },
+        header)};
+
+    _headers[name] = value;
+}
+
+auto response::setHeaders(std::initializer_list<
+    std::pair<std::variant<headers, std::string_view>, std::string_view>>
+        headers) noexcept -> void {
+    for (const auto& [header, value] : headers) setHeader(header, value);
 }
 } // namespace libcurl
