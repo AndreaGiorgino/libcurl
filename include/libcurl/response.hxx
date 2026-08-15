@@ -15,6 +15,11 @@ class response final {
    public: // ctors
     response(void) noexcept = default;
 
+    response(status_codes statusCode,
+        std::initializer_list<std::pair<std::variant<headers, std::string_view>,
+            std::string_view>>
+            headers = {}) noexcept;
+
     response(const response&) noexcept                     = default;
     auto operator =(const response&) noexcept -> response& = default;
 
@@ -48,6 +53,34 @@ class response final {
 
     // ------------------------------
 
+    // --------- Modifiers ----------
+
+    /**
+     * @brief Set the response status code
+     *
+     * @param statusCode The status code
+     */
+    auto setStatusCode(status_codes statusCode) noexcept -> void;
+
+    /**
+     * @brief Set/Add the response header
+     *
+     * @param header The header to set/add
+     * @param value The value to assign to the header
+     */
+    auto setHeader(std::variant<headers, std::string_view> header,
+        std::string_view value) noexcept -> void;
+
+    /**
+     * @brief Set/Add the response headers
+     *
+     * @param headers The values to assign to the headers
+     */
+    auto setHeaders(std::initializer_list<
+        std::pair<std::variant<headers, std::string_view>, std::string_view>>
+            headers) noexcept -> void;
+
+    // ------------------------------
    private: // members
     std::unordered_map<std::string, std::string> _headers {};
     status_codes _statusCode {status_codes::NOT_EXECUTED};
