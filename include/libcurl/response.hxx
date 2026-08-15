@@ -22,5 +22,8 @@ class response final {
     auto operator =(response&&) noexcept -> response& = default;
 
     ~response(void) noexcept = default;
+   private: // members
+    std::unordered_map<std::string, std::string> _headers {};
+    status_codes _statusCode {status_codes::NOT_EXECUTED};
 };
 } // namespace libcurl
