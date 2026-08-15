@@ -7,7 +7,6 @@
 
 namespace libcurl {
 class request final {
-   public: // definitions
    public: // ctors
     request(void) noexcept = default;
 
@@ -25,6 +24,8 @@ class request final {
     ~request(void) noexcept = default;
 
    public: // methods
+    // --------- Modifiers ----------
+
     /**
      * @brief Set the request target url
      *
@@ -56,6 +57,37 @@ class request final {
     auto setHeaders(std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
             headers) noexcept -> void;
+
+    // ------------------------------
+
+    // ----------- Lookup -----------
+
+    /**
+     * @brief Get the request target url
+     */
+    [[nodiscard]] auto getUrl(void) const noexcept -> std::string;
+
+    /**
+     * @brief Get the request method
+     */
+    [[nodiscard]] auto getMethod(void) const noexcept -> methods;
+
+    /**
+     * @brief Get the request header value
+     *
+     * @param header The header to lookup
+     */
+    [[nodiscard]] auto getHeader(
+        std::variant<headers, std::string_view> header) const noexcept
+        -> std::string;
+
+    /**
+     * @brief Get the request headers collection
+     */
+    [[nodiscard]] auto getHeaders(void) const noexcept
+        -> std::unordered_map<std::string, std::string>;
+
+    // ------------------------------
 
    private: // methods
    private: // members
