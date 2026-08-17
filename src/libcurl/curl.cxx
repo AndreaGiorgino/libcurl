@@ -67,6 +67,7 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
 
     return realSize;
 }
+
 auto get(request req) -> std::future<response> {
     return std::async(
         [](request req) -> response {
@@ -90,6 +91,10 @@ auto get(request req) -> std::future<response> {
                             getMethodName(req.getMethod())));
             }
 
+            // response headers setup
+            std::unordered_map<std::string, std::string> headers {};
+            curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaderCallback);
+            curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headers);
 
             if (curl_easy_perform(curl) != CURLE_OK)
                 throw std::runtime_error("Request failed");
