@@ -121,6 +121,9 @@ enum class headers {
  * @brief Get the string representation of the header
  *
  * @param header The header enum
+ *
+ * @throws std::logic_error If the header has not been implemented, should be
+ * unreachable
  */
 [[nodiscard]] auto getHeaderName(headers header) -> std::string;
 } // namespace libcurl

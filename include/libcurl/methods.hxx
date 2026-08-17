@@ -23,6 +23,9 @@ enum class methods {
  * @brief Get the string representation of the method
  *
  * @param method The method enum
+ *
+ * @throws std::logic_error If the method has not been implemented, should be
+ * unreachable
  */
 [[nodiscard]] auto getMethodName(methods method) -> std::string;
 } // namespace libcurl
