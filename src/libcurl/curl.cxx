@@ -106,6 +106,12 @@ auto get(request req) -> std::future<response> {
 
             long statusCode {};
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, statusCode);
+
+            response res {(status_codes)statusCode, {}, body.data};
+
+            for (const auto& [k, v] : headers) res.setHeader(k, v);
+
+            free(body.data);
             curl_easy_cleanup(curl);
 
             return res;
