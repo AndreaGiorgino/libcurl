@@ -108,6 +108,51 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
     return realSize;
 }
 
+/**
+ * @brief Compose the real url appending each parameter after escaping
+ *
+ * @param req The request
+ * @param curl The initialized CURL object
+ * @return The real url
+ */
+[[nodiscard]] auto composeUrl(const request& req, CURL* curl) -> std::string {
+    std::string realUrl {req.getUrl()};
+
+    const auto params {req.getParameters()};
+    if (params.size() != 0) {
+        realUrl += "?";
+        for (const auto& [k, v] : params) {
+            auto* buffer {curl_easy_escape(curl, k.c_str(), k.size())};
+
+            if (!buffer) {
+                curl_free(buffer);
+                curl_easy_cleanup(curl);
+                throw std::runtime_error(
+                    std::format("Cannot escape url: {:?}", realUrl));
+            }
+
+            realUrl += std::string {buffer} + "=";
+
+            buffer = curl_easy_escape(curl, v.c_str(), v.size());
+
+            if (!buffer) {
+                curl_free(buffer);
+                curl_easy_cleanup(curl);
+                throw std::runtime_error(
+                    std::format("Cannot escape url: {:?}", realUrl));
+            }
+
+            realUrl += std::string {buffer} + "&";
+
+            curl_free(buffer);
+        }
+
+        realUrl.pop_back(); // remove leading &
+    }
+
+    return realUrl;
+}
+
 auto get(request req) -> std::future<response> {
     return std::async(
         [](request req) -> response {
@@ -115,41 +160,8 @@ auto get(request req) -> std::future<response> {
 
             if (!curl) throw std::runtime_error("Cannot initialize curl");
 
-            // compose url with parameters
-            std::string realUrl {req.getUrl()};
-
-            const auto params {req.getParameters()};
-            if (params.size() != 0) {
-                realUrl += "?";
-                for (const auto& [k, v] : params) {
-                    auto* buffer {curl_easy_escape(curl, k.c_str(), k.size())};
-
-                    if (!buffer) {
-                        curl_free(buffer);
-                        curl_easy_cleanup(curl);
-                        throw std::runtime_error(
-                            std::format("Cannot escape url: {:?}", realUrl));
-                    }
-
-                    realUrl += std::string {buffer} + "=";
-
-                    buffer = curl_easy_escape(curl, v.c_str(), v.size());
-
-                    if (!buffer) {
-                        curl_free(buffer);
-                        curl_easy_cleanup(curl);
-                        throw std::runtime_error(
-                            std::format("Cannot escape url: {:?}", realUrl));
-                    }
-
-                    realUrl += std::string {buffer} + "&";
-
-                    curl_free(buffer);
-                }
-
-                realUrl.pop_back(); // remove leading &
-            }
-
+            // request url setup
+            const auto realUrl {composeUrl(req, curl)};
             curl_easy_setopt(curl, CURLOPT_URL, realUrl.c_str());
 
             switch (req.getMethod()) {
@@ -180,17 +192,18 @@ auto get(request req) -> std::future<response> {
             const auto curlCode {curl_easy_perform(curl)};
             if (curlCode != CURLE_OK) {
                 curl_easy_cleanup(curl);
-
                 throw std::runtime_error(
                     std::format("Request failed: CURL code was {}",
                         std::to_underlying(curlCode)));
             }
 
+            // set response status code
             long statusCode {};
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
 
             response res {realUrl, (status_codes)statusCode, {}, body.data};
 
+            // set response headers
             for (const auto& [k, v] : headers) res.setHeader(k, v);
 
             free(body.data);
