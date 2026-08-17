@@ -4,10 +4,13 @@ namespace libcurl {
 request::request(std::string_view url, methods method,
     std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
-        headers) noexcept
+        headers,
+    std::initializer_list<std::pair<std::string_view, std::string_view>>
+        params) noexcept
     : _url(url),
       _method(method) {
     setHeaders(headers);
+    setParameters(params);
 }
 
 auto request::getUrl(void) const noexcept -> std::string {
@@ -42,6 +45,19 @@ auto request::getHeaders(void) const noexcept
     return _headers;
 }
 
+auto request::getParameter(std::string_view param) const noexcept
+    -> std::string {
+    const std::string name {param};
+    if (const auto it {_params.find(name)}; it != _headers.end())
+        return it->second;
+    return {};
+}
+
+auto request::getParameters(void) const noexcept
+    -> std::unordered_map<std::string, std::string> {
+    return _params;
+}
+
 auto request::setUrl(std::string_view url) noexcept -> void {
     _url = url;
 }
@@ -69,6 +85,18 @@ auto request::setHeader(std::variant<headers, std::string_view> header,
 auto request::setHeaders(std::initializer_list<
     std::pair<std::variant<headers, std::string_view>, std::string_view>>
         headers) noexcept -> void {
-    for (const auto& [header, value] : headers) setHeader(header, value);
+    for (const auto& [k, v] : headers) setHeader(k, v);
+}
+
+auto request::setParameter(
+    std::string_view param, std::string_view value) noexcept -> void {
+    const std::string name {param};
+    _params[name] = value;
+}
+
+auto request::setParameters(
+    std::initializer_list<std::pair<std::string_view, std::string_view>>
+        params) noexcept -> void {
+    for (const auto& [k, v] : params) setParameter(k, v);
 }
 } // namespace libcurl

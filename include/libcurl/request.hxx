@@ -18,7 +18,9 @@ class request final {
     request(std::string_view url, methods method = methods::GET,
         std::initializer_list<std::pair<std::variant<headers, std::string_view>,
             std::string_view>>
-            headers = {}) noexcept;
+            headers = {},
+        std::initializer_list<std::pair<std::string_view, std::string_view>>
+            params = {}) noexcept;
 
     request(const request&) noexcept                     = default;
     auto operator =(const request&) noexcept -> request& = default;
@@ -54,6 +56,20 @@ class request final {
      * @brief Get the request headers collection
      */
     [[nodiscard]] auto getHeaders(void) const noexcept
+        -> std::unordered_map<std::string, std::string>;
+
+    /**
+     * @brief Get the request parameter value
+     *
+     * @param param The parameter to lookup
+     */
+    [[nodiscard]] auto getParameter(std::string_view param) const noexcept
+        -> std::string;
+
+    /**
+     * @brief Get the request parameters collection
+     */
+    [[nodiscard]] auto getParameters(void) const noexcept
         -> std::unordered_map<std::string, std::string>;
 
     // ------------------------------
@@ -92,10 +108,30 @@ class request final {
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
             headers) noexcept -> void;
 
+    /**
+     * @brief Set/Add the request parameter
+     *
+     * @param param The parameter to set/add
+     * @param value The value to assign to the parameter
+     */
+    auto setParameter(std::string_view param, std::string_view value) noexcept
+        -> void;
+
+    /**
+     * @brief Set/Add the request parameters
+     *
+     * @param params The values to assign to the parameters
+     */
+    auto setParameters(
+        std::initializer_list<std::pair<std::string_view, std::string_view>>
+            params) noexcept -> void;
+
     // ------------------------------
    private: // members
     std::string _url {};
     methods _method {methods::GET};
+
     std::unordered_map<std::string, std::string> _headers {};
+    std::unordered_map<std::string, std::string> _params {};
 };
 } // namespace libcurl
