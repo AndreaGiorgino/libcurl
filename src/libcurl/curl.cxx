@@ -6,29 +6,59 @@
 #include <utility>
 
 namespace libcurl {
+/**
+ * @brief Left strip string
+ *
+ * @param str The string to strip
+ * @return The left stripped string
+ */
 [[nodiscard]] auto lstrip(std::string_view str) noexcept -> std::string {
     return {std::find_if(
         str.cbegin(), str.cend(), [](auto ch) { return !std::isspace(ch); })};
 }
 
+/**
+ * @brief Right strip string
+ *
+ * @param str The string to strip
+ * @return The right stripped string
+ */
 [[nodiscard]] auto rstrip(std::string_view str) noexcept -> std::string {
     return {str.begin(), std::find_if(str.crbegin(), str.crend(), [](auto ch) {
                 return !std::isspace(ch);
             }).base()};
 }
 
+/**
+ * @brief Left and right strip string
+ *
+ * @param str The string to strip
+ * @return The left and right stripped string
+ */
 [[nodiscard]] auto strip(std::string_view str) noexcept -> std::string {
     return lstrip(rstrip(str));
 }
 
+/**
+ * @brief Represents the memory buffer for the response body
+ */
 struct mem_buffer {
     char* data {(char*)malloc(1)};
     size_t size {};
 };
 
-auto writeBodyCallback(void* contents, std::size_t size, std::size_t nmemb,
+/**
+ * @brief Write the response body chunk to the memory buffer
+ *
+ * @param contents The contents to write
+ * @param size The size each item in the chunk
+ * @param nitems The number of items in the chunk
+ * @param userp The memory buffer to write
+ * @return The size written
+ */
+auto writeBodyCallback(void* contents, std::size_t size, std::size_t nitems,
     void* userp) -> std::size_t {
-    const auto realsize {size * nmemb};
+    const auto realsize {size * nitems};
 
     auto* mem {(mem_buffer*)userp};
     auto* ptr {(char*)realloc(mem->data, mem->size + realsize + 1)};
@@ -46,6 +76,15 @@ auto writeBodyCallback(void* contents, std::size_t size, std::size_t nmemb,
     return realsize;
 }
 
+/**
+ * @brief Write the response headers chunk to the memory buffer
+ *
+ * @param buffer The header line (<name>: <value>)
+ * @param size The size each item in the chunk
+ * @param nitems The number of items in the chunk
+ * @param headers The memory buffer to write to
+ * @return The size written
+ */
 auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
     std::unordered_map<std::string, std::string>* headers) -> std::size_t {
     const auto realSize {size * nitems};
