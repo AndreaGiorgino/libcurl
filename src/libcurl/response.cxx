@@ -1,14 +1,19 @@
 #include <libcurl/response.hxx>
 
 namespace libcurl {
-response::response(status_codes statusCode,
+response::response(std::string_view url, status_codes statusCode,
     std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
         headers,
     std::string_view body) noexcept
-    : _statusCode(statusCode),
+    : _url(url),
+      _statusCode(statusCode),
       _body(body) {
     setHeaders(headers);
+}
+
+auto response::getUrl(void) const noexcept -> std::string {
+    return _url;
 }
 
 auto response::getStatusCode(void) const noexcept -> status_codes {
@@ -41,6 +46,10 @@ auto response::getHeaders(void) const noexcept
 
 auto response::getBody(void) const noexcept -> std::string {
     return _body;
+}
+
+auto response::setUrl(std::string_view url) noexcept -> void {
+    _url = url;
 }
 
 auto response::setStatusCode(status_codes statusCode) noexcept -> void {

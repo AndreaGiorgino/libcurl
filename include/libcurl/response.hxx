@@ -15,7 +15,7 @@ class response final {
    public: // ctors
     response(void) noexcept = default;
 
-    response(status_codes statusCode,
+    response(std::string_view url, status_codes statusCode,
         std::initializer_list<std::pair<std::variant<headers, std::string_view>,
             std::string_view>>
             headers           = {},
@@ -31,6 +31,11 @@ class response final {
 
    public:
     // ----------- Lookup -----------
+
+    /**
+     * @brief Get the requested url
+     */
+    [[nodiscard]] auto getUrl(void) const noexcept -> std::string;
 
     /**
      * @brief Get the response status code
@@ -60,6 +65,13 @@ class response final {
     // ------------------------------
 
     // --------- Modifiers ----------
+
+    /**
+     * @brief Set the requested url
+     *
+     * @param url The url to set
+     */
+    auto setUrl(std::string_view url) noexcept -> void;
 
     /**
      * @brief Set the response status code
@@ -95,6 +107,7 @@ class response final {
 
     // ------------------------------
    private: // members
+    std::string _url {};
     status_codes _statusCode {status_codes::NOT_EXECUTED};
 
     std::unordered_map<std::string, std::string> _headers {};
