@@ -67,4 +67,36 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
 
     return realSize;
 }
+auto get(request req) -> std::future<response> {
+    return std::async(
+        [](request req) -> response {
+            auto* curl {curl_easy_init()};
+
+            if (!curl) throw std::runtime_error("Cannot initialize curl");
+
+            curl_easy_setopt(curl, CURLOPT_URL, req.getUrl().c_str());
+
+            switch (req.getMethod()) {
+                case methods::GET:
+                    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+                    break;
+                case methods::HEAD:
+                    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST,
+                        getMethodName(req.getMethod()).c_str());
+                    break;
+                default:
+                    throw std::runtime_error(
+                        std::format("{:?} is not a GET method",
+                            getMethodName(req.getMethod())));
+            }
+
+
+            if (curl_easy_perform(curl) != CURLE_OK)
+                throw std::runtime_error("Request failed");
+            curl_easy_cleanup(curl);
+
+            return res;
+        },
+        req);
+}
 } // namespace libcurl
