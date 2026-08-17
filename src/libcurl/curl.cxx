@@ -103,6 +103,9 @@ auto get(request req) -> std::future<response> {
 
             if (curl_easy_perform(curl) != CURLE_OK)
                 throw std::runtime_error("Request failed");
+
+            long statusCode {};
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, statusCode);
             curl_easy_cleanup(curl);
 
             return res;
