@@ -47,6 +47,7 @@ target_compile_options(
 target_include_directories(
     CommonCxxTests
     PRIVATE $<TARGET_FILE_DIR:${PROJECT_NAME}>/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(
