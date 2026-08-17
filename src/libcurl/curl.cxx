@@ -44,4 +44,27 @@ auto writeBodyCallback(void* contents, std::size_t size, std::size_t nmemb,
 
     return realsize;
 }
+
+auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
+    std::unordered_map<std::string, std::string>* headers) -> std::size_t {
+    const auto realSize {size * nitems};
+
+    const auto header {strip({buffer, realSize})};
+
+    // skip end marker
+    if (header.empty()) return realSize;
+
+    const auto pos {header.find(": ")};
+
+    // skip protocol, version and status
+    if (pos == std::string::npos) return realSize;
+
+    const auto it {header.begin() + pos};
+
+    const std::string name {header.begin(), it};
+    const std::string val {it + 2, header.end()};
+    (*headers)[name] = val;
+
+    return realSize;
+}
 } // namespace libcurl
