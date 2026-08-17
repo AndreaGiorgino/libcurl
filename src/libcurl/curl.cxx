@@ -105,7 +105,7 @@ auto get(request req) -> std::future<response> {
                 throw std::runtime_error("Request failed");
 
             long statusCode {};
-            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, statusCode);
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
 
             response res {(status_codes)statusCode, {}, body.data};
 
