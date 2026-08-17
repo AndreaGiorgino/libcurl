@@ -18,7 +18,8 @@ class response final {
     response(status_codes statusCode,
         std::initializer_list<std::pair<std::variant<headers, std::string_view>,
             std::string_view>>
-            headers = {}) noexcept;
+            headers           = {},
+        std::string_view body = {}) noexcept;
 
     response(const response&) noexcept                     = default;
     auto operator =(const response&) noexcept -> response& = default;
@@ -51,6 +52,11 @@ class response final {
     [[nodiscard]] auto getHeaders(void) const noexcept
         -> std::unordered_map<std::string, std::string>;
 
+    /**
+     * @brief Get the response body
+     */
+    [[nodiscard]] auto getBody(void) const noexcept -> std::string;
+
     // ------------------------------
 
     // --------- Modifiers ----------
@@ -80,9 +86,18 @@ class response final {
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
             headers) noexcept -> void;
 
+    /**
+     * @brief Set the response body
+     *
+     * @param body The value to assign to the body
+     */
+    auto setBody(std::string_view body) noexcept -> void;
+
     // ------------------------------
    private: // members
-    std::unordered_map<std::string, std::string> _headers {};
     status_codes _statusCode {status_codes::NOT_EXECUTED};
+
+    std::unordered_map<std::string, std::string> _headers {};
+    std::string _body {};
 };
 } // namespace libcurl

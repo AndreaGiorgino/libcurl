@@ -4,8 +4,8 @@ namespace libcurl {
 response::response(status_codes statusCode,
     std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
-        headers) noexcept
-    : _statusCode(statusCode) {
+        headers, std::string_view body) noexcept
+    : _statusCode(statusCode), _body(body) {
     setHeaders(headers);
 }
 
@@ -37,6 +37,10 @@ auto response::getHeaders(void) const noexcept
     return _headers;
 }
 
+auto response::getBody(void) const noexcept -> std::string {
+    return _body;
+}
+
 auto response::setStatusCode(status_codes statusCode) noexcept -> void {
     _statusCode = statusCode;
 }
@@ -61,5 +65,9 @@ auto response::setHeaders(std::initializer_list<
     std::pair<std::variant<headers, std::string_view>, std::string_view>>
         headers) noexcept -> void {
     for (const auto& [header, value] : headers) setHeader(header, value);
+}
+
+auto response::setBody(std::string_view body) noexcept -> void {
+    _body = body;
 }
 } // namespace libcurl
