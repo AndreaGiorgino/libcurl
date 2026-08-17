@@ -3,6 +3,7 @@
 #include <cstring>
 #include <format>
 #include <libcurl/curl.hxx>
+#include <utility>
 
 namespace libcurl {
 [[nodiscard]] auto lstrip(std::string_view str) noexcept -> std::string {
@@ -75,7 +76,42 @@ auto get(request req) -> std::future<response> {
 
             if (!curl) throw std::runtime_error("Cannot initialize curl");
 
-            curl_easy_setopt(curl, CURLOPT_URL, req.getUrl().c_str());
+            // compose url with parameters
+            std::string realUrl {req.getUrl()};
+
+            const auto params {req.getParameters()};
+            if (params.size() != 0) {
+                realUrl += "?";
+                for (const auto& [k, v] : params) {
+                    auto* buffer {curl_easy_escape(curl, k.c_str(), k.size())};
+
+                    if (!buffer) {
+                        curl_free(buffer);
+                        curl_easy_cleanup(curl);
+                        throw std::runtime_error(
+                            std::format("Cannot escape url: {:?}", realUrl));
+                    }
+
+                    realUrl += std::string {buffer} + "=";
+
+                    buffer = curl_easy_escape(curl, v.c_str(), v.size());
+
+                    if (!buffer) {
+                        curl_free(buffer);
+                        curl_easy_cleanup(curl);
+                        throw std::runtime_error(
+                            std::format("Cannot escape url: {:?}", realUrl));
+                    }
+
+                    realUrl += std::string {buffer} + "&";
+
+                    curl_free(buffer);
+                }
+
+                realUrl.pop_back(); // remove leading &
+            }
+
+            curl_easy_setopt(curl, CURLOPT_URL, realUrl.c_str());
 
             switch (req.getMethod()) {
                 case methods::GET:
@@ -86,6 +122,7 @@ auto get(request req) -> std::future<response> {
                         getMethodName(req.getMethod()).c_str());
                     break;
                 default:
+                    curl_easy_cleanup(curl);
                     throw std::runtime_error(
                         std::format("{:?} is not a GET method",
                             getMethodName(req.getMethod())));
@@ -101,13 +138,19 @@ auto get(request req) -> std::future<response> {
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeBodyCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&body);
 
-            if (curl_easy_perform(curl) != CURLE_OK)
-                throw std::runtime_error("Request failed");
+            const auto curlCode {curl_easy_perform(curl)};
+            if (curlCode != CURLE_OK) {
+                curl_easy_cleanup(curl);
+
+                throw std::runtime_error(
+                    std::format("Request failed: CURL code was {}",
+                        std::to_underlying(curlCode)));
+            }
 
             long statusCode {};
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
 
-            response res {(status_codes)statusCode, {}, body.data};
+            response res {realUrl, (status_codes)statusCode, {}, body.data};
 
             for (const auto& [k, v] : headers) res.setHeader(k, v);
 
