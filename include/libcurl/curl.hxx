@@ -1,21 +1,14 @@
 #pragma once
 
+#include <future>
+#include <libcurl/request.hxx>
+#include <libcurl/response.hxx>
+
 namespace libcurl {
-class curl final {
-   public: // definitions
-   public: // ctors
-    curl(void) = default;
-
-    curl(const curl&)                     = default;
-    auto operator =(const curl&) -> curl& = default;
-
-    curl(curl&&)                     = default;
-    auto operator =(curl&&) -> curl& = default;
-
-    ~curl(void) = default;
-
-   public:  // methods
-   private: // methods
-   private: // members
-};
+/**
+ * @brief Send a request and receive a response
+ *
+ * @param req The request
+ */
+[[nodiscard]] auto get(request req) -> std::future<response>;
 } // namespace libcurl
