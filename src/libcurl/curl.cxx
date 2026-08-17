@@ -96,6 +96,11 @@ auto get(request req) -> std::future<response> {
             curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaderCallback);
             curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headers);
 
+            // response body setup
+            mem_buffer body {};
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeBodyCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&body);
+
             if (curl_easy_perform(curl) != CURLE_OK)
                 throw std::runtime_error("Request failed");
             curl_easy_cleanup(curl);
