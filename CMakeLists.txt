@@ -12,6 +12,25 @@ project(
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/Options.cmake)
 
+find_package(CURL QUIET)
+
+if(NOT CURL_FOUND)
+    message(STATUS "Fetching CURL.")
+    include(FetchContent)
+    FetchContent_Declare(
+        CURL
+        GIT_REPOSITORY git@github.com:curl/curl
+        GIT_TAG curl-8_21_0
+        GIT_SHALLOW TRUE
+    )
+
+    set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
+    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(HTTP_ONLY ON CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(CURL)
+endif()
+
 #
 # Target
 #
@@ -46,6 +65,18 @@ target_include_directories(
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+
+if(TARGET CURL::libcurl)
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE CURL::libcurl
+    )
+else()
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE libcurl
+    )
+endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/PostBuild.cmake)
 

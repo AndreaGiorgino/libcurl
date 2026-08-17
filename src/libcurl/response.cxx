@@ -4,8 +4,10 @@ namespace libcurl {
 response::response(status_codes statusCode,
     std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
-        headers, std::string_view body) noexcept
-    : _statusCode(statusCode), _body(body) {
+        headers,
+    std::string_view body) noexcept
+    : _statusCode(statusCode),
+      _body(body) {
     setHeaders(headers);
 }
 
