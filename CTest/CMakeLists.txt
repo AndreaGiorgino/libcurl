@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 3.24)
 
 #
+# Dependencies
+#
+
+include(FetchContent)
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY git@github.com:AndreaGiorgino/libjson
+    GIT_TAG 1.2.0
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(json)
+
+#
 # Target executables
 #
 
@@ -54,6 +69,7 @@ target_include_directories(
 target_link_libraries(
     CommonCxxTests
     PRIVATE ${PROJECT_NAME}
+    PRIVATE json
 )
 
 foreach(TEST_FILE ${SOURCE_FILES})
