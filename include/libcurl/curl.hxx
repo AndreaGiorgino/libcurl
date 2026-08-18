@@ -10,5 +10,5 @@ namespace libcurl {
  *
  * @param req The request to send
  */
-[[nodiscard]] auto get(request req) -> std::future<response>;
+[[nodiscard]] auto curl(request req) -> std::future<response>;
 } // namespace libcurl

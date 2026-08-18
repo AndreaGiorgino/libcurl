@@ -153,12 +153,21 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
     return realUrl;
 }
 
-auto get(request req) -> std::future<response> {
+auto curl(request req) -> std::future<response> {
     return std::async(
         [](request req) -> response {
+            curl_global_init(CURL_GLOBAL_ALL);
             auto* curl {curl_easy_init()};
 
-            if (!curl) throw std::runtime_error("Cannot initialize curl");
+            const auto cleanup {[&](void) {
+                curl_easy_cleanup(curl);
+                curl_global_cleanup();
+            }};
+
+            if (!curl) {
+                cleanup();
+                throw std::runtime_error("Cannot initialize curl");
+            }
 
             // request url setup
             const auto realUrl {composeUrl(req, curl)};
@@ -167,16 +176,10 @@ auto get(request req) -> std::future<response> {
             switch (req.getMethod()) {
                 case methods::GET:
                     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-                    break;
                 case methods::HEAD:
+                default:
                     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST,
                         getMethodName(req.getMethod()).c_str());
-                    break;
-                default:
-                    curl_easy_cleanup(curl);
-                    throw std::runtime_error(
-                        std::format("{:?} is not a GET method",
-                            getMethodName(req.getMethod())));
             }
 
             // response headers setup
@@ -191,7 +194,7 @@ auto get(request req) -> std::future<response> {
 
             const auto curlCode {curl_easy_perform(curl)};
             if (curlCode != CURLE_OK) {
-                curl_easy_cleanup(curl);
+                cleanup();
                 throw std::runtime_error(
                     std::format("Request failed: CURL code was {}",
                         std::to_underlying(curlCode)));
@@ -207,7 +210,7 @@ auto get(request req) -> std::future<response> {
             for (const auto& [k, v] : headers) res.setHeader(k, v);
 
             free(body.data);
-            curl_easy_cleanup(curl);
+            cleanup();
 
             return res;
         },
