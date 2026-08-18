@@ -13,8 +13,8 @@ namespace libcurl {
  * @return The left stripped string
  */
 [[nodiscard]] auto lstrip(std::string_view str) noexcept -> std::string {
-    return {std::find_if(
-        str.cbegin(), str.cend(), [](auto ch) { return !std::isspace(ch); })};
+    return {std::find_if(str.cbegin(), str.cend(),
+                         [](auto ch) { return !std::isspace(ch); })};
 }
 
 /**
@@ -25,8 +25,8 @@ namespace libcurl {
  */
 [[nodiscard]] auto rstrip(std::string_view str) noexcept -> std::string {
     return {str.begin(), std::find_if(str.crbegin(), str.crend(), [](auto ch) {
-                return !std::isspace(ch);
-            }).base()};
+                             return !std::isspace(ch);
+                         }).base()};
 }
 
 /**
@@ -37,6 +37,16 @@ namespace libcurl {
  */
 [[nodiscard]] auto strip(std::string_view str) noexcept -> std::string {
     return lstrip(rstrip(str));
+}
+
+/**
+ * @brief Cleanup wrapper for CURL struct
+ *
+ * @param curl The CURL struct to cleanup
+ */
+auto cleanup(CURL* curl) noexcept -> void {
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
 }
 
 /**
@@ -57,7 +67,7 @@ struct mem_buffer {
  * @return The size written
  */
 auto writeBodyCallback(void* contents, std::size_t size, std::size_t nitems,
-    void* userp) -> std::size_t {
+                       void* userp) -> std::size_t {
     const auto realsize {size * nitems};
 
     auto* mem {(mem_buffer*)userp};
@@ -86,7 +96,8 @@ auto writeBodyCallback(void* contents, std::size_t size, std::size_t nitems,
  * @return The size written
  */
 auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
-    std::unordered_map<std::string, std::string>* headers) -> std::size_t {
+                         std::unordered_map<std::string, std::string>* headers)
+    -> std::size_t {
     const auto realSize {size * nitems};
 
     const auto header {strip({buffer, realSize})};
@@ -109,48 +120,120 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
 }
 
 /**
- * @brief Compose the real url appending each parameter after escaping
+ * @brief Compose the url appending each parameter after escaping
  *
  * @param req The request
  * @param curl The initialized CURL object
- * @return The real url
+ * @return The composed url
  */
 [[nodiscard]] auto composeUrl(const request& req, CURL* curl) -> std::string {
-    std::string realUrl {req.getUrl()};
+    std::string composedUrl {req.getUrl()};
 
     const auto params {req.getParameters()};
     if (params.size() != 0) {
-        realUrl += "?";
+        composedUrl += "?";
         for (const auto& [k, v] : params) {
             auto* buffer {curl_easy_escape(curl, k.c_str(), k.size())};
 
             if (!buffer) {
                 curl_free(buffer);
-                curl_easy_cleanup(curl);
+                cleanup(curl);
                 throw std::runtime_error(
-                    std::format("Cannot escape url: {:?}", realUrl));
+                    std::format("Cannot escape parameter name: {:?}", k));
             }
 
-            realUrl += std::string {buffer} + "=";
+            composedUrl += std::string {buffer} + "=";
 
             buffer = curl_easy_escape(curl, v.c_str(), v.size());
 
             if (!buffer) {
                 curl_free(buffer);
-                curl_easy_cleanup(curl);
+                cleanup(curl);
                 throw std::runtime_error(
-                    std::format("Cannot escape url: {:?}", realUrl));
+                    std::format("Cannot escape parameter value: {:?}", v));
             }
 
-            realUrl += std::string {buffer} + "&";
+            composedUrl += std::string {buffer} + "&";
 
             curl_free(buffer);
         }
 
-        realUrl.pop_back(); // remove leading &
+        composedUrl.pop_back(); // remove leading &
     }
 
-    return realUrl;
+    return composedUrl;
+}
+
+/**
+ * @brief Compose the post fields list appending each post field after escaping
+ *
+ * @param req The request
+ * @param curl The initialized CURL object
+ * @return The composed post fields
+ */
+[[nodiscard]] auto composePostFields(const auto& req, CURL* curl)
+    -> std::string {
+    std::string composedPostFields {};
+
+    const auto postFields {req.getPostFields()};
+
+    // check for json content
+    if (req.getHeader(headers::CONTENT_TYPE) == "application/json"
+        && postFields.size() != 0) {
+        cleanup(curl);
+        throw std::runtime_error(
+            std::format("Only one post field is expected when header "
+                        "'{}' is 'application/json'",
+                        getHeaderName(headers::CONTENT_TYPE)));
+    }
+
+    if (postFields.size() != 0) {
+        for (const auto& [k, v] : postFields) {
+            auto* buffer {curl_easy_escape(curl, k.c_str(), k.size())};
+
+            if (!buffer) {
+                curl_free(buffer);
+                cleanup(curl);
+                throw std::runtime_error(
+                    std::format("Cannot escape post field name: {:?}", k));
+            }
+
+            composedPostFields += std::string {buffer} + "=";
+
+            buffer = curl_easy_escape(curl, v.c_str(), v.size());
+
+            if (!buffer) {
+                curl_free(buffer);
+                cleanup(curl);
+                throw std::runtime_error(
+                    std::format("Cannot escape post field value: {:?}", v));
+            }
+
+            composedPostFields += std::string {buffer} + "&";
+
+            curl_free(buffer);
+        }
+
+        composedPostFields.pop_back(); // remove leading &
+    }
+
+    return composedPostFields;
+}
+
+/**
+ * @brief Compose the headers collection
+ *
+ * @param req The request
+ * @return The composed headers in curl_slist*
+ */
+[[nodiscard]] auto composeHeaders(const auto& req) -> curl_slist* {
+    const auto headers {req.getHeaders()};
+
+    curl_slist* composedHeaders {NULL};
+    for (const auto& [k, v] : headers)
+        composedHeaders = curl_slist_append(composedHeaders, std::string {k + ": " + v}.c_str());
+
+    return composedHeaders;
 }
 
 auto curl(request req) -> std::future<response> {
@@ -159,19 +242,14 @@ auto curl(request req) -> std::future<response> {
             curl_global_init(CURL_GLOBAL_ALL);
             auto* curl {curl_easy_init()};
 
-            const auto cleanup {[&](void) {
-                curl_easy_cleanup(curl);
-                curl_global_cleanup();
-            }};
-
             if (!curl) {
-                cleanup();
+                cleanup(curl);
                 throw std::runtime_error("Cannot initialize curl");
             }
 
             // request url setup
-            const auto realUrl {composeUrl(req, curl)};
-            curl_easy_setopt(curl, CURLOPT_URL, realUrl.c_str());
+            const auto composedUrl {composeUrl(req, curl)};
+            curl_easy_setopt(curl, CURLOPT_URL, composedUrl.c_str());
 
             switch (req.getMethod()) {
                 case methods::GET:
@@ -179,8 +257,17 @@ auto curl(request req) -> std::future<response> {
                 case methods::HEAD:
                 default:
                     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST,
-                        getMethodName(req.getMethod()).c_str());
+                                     getMethodName(req.getMethod()).c_str());
             }
+
+            // request headers setup
+            auto composedHeaders {composeHeaders(req)};
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, composedHeaders);
+
+            // request post fields setup
+            const auto composedPostFields {composePostFields(req, curl)};
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS,
+                             composedPostFields.c_str());
 
             // response headers setup
             std::unordered_map<std::string, std::string> headers {};
@@ -193,24 +280,27 @@ auto curl(request req) -> std::future<response> {
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&body);
 
             const auto curlCode {curl_easy_perform(curl)};
+
             if (curlCode != CURLE_OK) {
-                cleanup();
+                cleanup(curl);
+                curl_slist_free_all(composedHeaders);
                 throw std::runtime_error(
                     std::format("Request failed: CURL code was {}",
-                        std::to_underlying(curlCode)));
+                                std::to_underlying(curlCode)));
             }
 
             // set response status code
             long statusCode {};
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
 
-            response res {realUrl, (status_codes)statusCode, {}, body.data};
+            response res {composedUrl, (status_codes)statusCode, {}, body.data};
 
             // set response headers
             for (const auto& [k, v] : headers) res.setHeader(k, v);
 
+            cleanup(curl);
             free(body.data);
-            cleanup();
+            curl_slist_free_all(composedHeaders);
 
             return res;
         },
