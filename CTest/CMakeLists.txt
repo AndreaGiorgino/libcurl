@@ -24,6 +24,9 @@ set(
 
     # Methods
     TestMethods_GetName.cxx
+
+    # Headers
+    TestHeaders_GetName.cxx
     TestGET.cxx
 )
 
