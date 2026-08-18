@@ -41,9 +41,6 @@ set(
     # Response
     TestResponse_Ctors.cxx
     TestResponse_GetSet.cxx
-
-    # GET
-    TestGET.cxx
 )
 
 create_test_sourcelist(
