@@ -33,6 +33,7 @@ set(
 
     # GET
     TestGET.cxx
+    TestGET_Parameters.cxx
 )
 
 create_test_sourcelist(
