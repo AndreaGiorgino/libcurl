@@ -27,8 +27,8 @@ class request final {
     request(const request&) noexcept                     = default;
     auto operator =(const request&) noexcept -> request& = default;
 
-    request(request&&) noexcept                     = default;
-    auto operator =(request&&) noexcept -> request& = default;
+    request(request&& rhs) noexcept;
+    auto operator =(request&& rhs) noexcept -> request&;
 
     ~request(void) noexcept = default;
 

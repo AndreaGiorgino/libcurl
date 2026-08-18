@@ -15,6 +15,23 @@ request::request(
     setParameters(params);
     setPostFields(fields);
 }
+
+request::request(request&& rhs) noexcept {
+    _url        = std::move(rhs._url);
+    _method     = std::move(rhs._method);
+    _headers    = std::move(rhs._headers);
+    _params     = std::move(rhs._params);
+    _postFields = std::move(rhs._postFields);
+}
+
+auto request::operator =(request&& rhs) noexcept -> request& {
+    _url        = std::move(rhs._url);
+    _method     = std::move(rhs._method);
+    _headers    = std::move(rhs._headers);
+    _params     = std::move(rhs._params);
+    _postFields = std::move(rhs._postFields);
+
+    return *this;
 }
 
 auto request::getUrl(void) const noexcept -> std::string {
