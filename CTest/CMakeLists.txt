@@ -30,6 +30,7 @@ set(
 
     # Requuest
     TestRequest_Ctors.cxx
+    TestRequest_GetSet.cxx
 
     # Response
     TestResponse_Ctors.cxx
