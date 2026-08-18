@@ -20,5 +20,6 @@ auto checkeq(const Tp& lhs, const Up& rhs) -> void {
 }
 
 auto checkeqDict(const std::unordered_map<std::string, std::string>& lhs,
-    const std::unordered_map<std::string, std::string>& rhs) -> void;
+                 const std::unordered_map<std::string, std::string>& rhs)
+    -> void;
 } // namespace helpers
