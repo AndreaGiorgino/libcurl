@@ -34,6 +34,7 @@ set(
     # Requuest
     TestRequest_Ctors.cxx
     TestRequest_GetSet.cxx
+    TestRequest_Parameters.cxx
 
     # Response
     TestResponse_Ctors.cxx
@@ -41,7 +42,6 @@ set(
 
     # GET
     TestGET.cxx
-    TestGET_Parameters.cxx
 )
 
 create_test_sourcelist(
