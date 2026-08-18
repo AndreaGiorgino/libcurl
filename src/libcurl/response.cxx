@@ -14,10 +14,7 @@ response::response(
 }
 
 response::response(response&& rhs) noexcept {
-    _url        = std::move(rhs._url);
-    _statusCode = std::move(rhs._statusCode);
-    _headers    = std::move(rhs._headers);
-    _body       = std::move(rhs._body);
+    *this = std::move(rhs);
 }
 
 auto response::operator =(response&& rhs) noexcept -> response& {

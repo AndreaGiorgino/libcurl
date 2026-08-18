@@ -17,11 +17,7 @@ request::request(
 }
 
 request::request(request&& rhs) noexcept {
-    _url        = std::move(rhs._url);
-    _method     = std::move(rhs._method);
-    _headers    = std::move(rhs._headers);
-    _params     = std::move(rhs._params);
-    _postFields = std::move(rhs._postFields);
+    *this = std::move(rhs);
 }
 
 auto request::operator =(request&& rhs) noexcept -> request& {
