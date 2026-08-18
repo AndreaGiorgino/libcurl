@@ -231,7 +231,8 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
 
     curl_slist* composedHeaders {NULL};
     for (const auto& [k, v] : headers)
-        composedHeaders = curl_slist_append(composedHeaders, std::string {k + ": " + v}.c_str());
+        composedHeaders = curl_slist_append(composedHeaders,
+                                            std::string {k + ": " + v}.c_str());
 
     return composedHeaders;
 }
@@ -283,7 +284,10 @@ auto curl(request req) -> std::future<response> {
 
             if (curlCode != CURLE_OK) {
                 cleanup(curl);
+
+                free(body.data);
                 curl_slist_free_all(composedHeaders);
+
                 throw std::runtime_error(
                     std::format("Request failed: CURL code was {}",
                                 std::to_underlying(curlCode)));
@@ -299,6 +303,7 @@ auto curl(request req) -> std::future<response> {
             for (const auto& [k, v] : headers) res.setHeader(k, v);
 
             cleanup(curl);
+
             free(body.data);
             curl_slist_free_all(composedHeaders);
 
