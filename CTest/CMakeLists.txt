@@ -21,8 +21,10 @@ FetchContent_MakeAvailable(json)
 
 set(
     SOURCE_FILES
+
+    # Methods
+    TestMethods_GetName.cxx
     TestGET.cxx
-    TestGETWithParams.cxx
 )
 
 create_test_sourcelist(
