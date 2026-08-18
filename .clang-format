@@ -1,7 +1,7 @@
 BasedOnStyle: Google
 IndentWidth: 4
 
-AlignAfterOpenBracket: false
+AlignAfterOpenBracket: true
 AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: true
 AlignConsecutiveBitFields: true
