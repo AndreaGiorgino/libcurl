@@ -73,14 +73,6 @@ enum class status_codes : std::uint16_t {
 };
 
 /**
- * @brief Get the status code numeric value
- *
- * @param statusCode The status code
- */
-[[nodiscard]] auto getStatusCodeValue(status_codes statusCode) noexcept
-    -> std::uint16_t;
-
-/**
  * @brief Get the string representation of the status code
  *
  * @param statusCode The status code

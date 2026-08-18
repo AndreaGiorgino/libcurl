@@ -1,5 +1,6 @@
 #include <helpers.hxx>
 #include <libcurl/curl.hxx>
+#include <utility>
 
 using libcurl::request;
 using libcurl::status_codes;
@@ -13,8 +14,8 @@ auto TestGET(int, char**) -> int {
     const auto res {future.get()};
 
     // check status code
-    helpers::checkeq(getStatusCodeValue(res.getStatusCode()),
-        getStatusCodeValue(status_codes::OK));
+    helpers::checkeq(std::to_underlying(res.getStatusCode()),
+                     std::to_underlying(status_codes::OK));
 
     return 0;
 }

@@ -3,10 +3,6 @@
 #include <utility>
 
 namespace libcurl {
-auto getStatusCodeValue(status_codes statusCode) noexcept -> std::uint16_t {
-    return std::to_underlying(statusCode);
-}
-
 auto getStatusCodeName(status_codes statusCode) -> std::string {
     switch (statusCode) {
         case status_codes::NOT_EXECUTED:
@@ -130,33 +126,33 @@ auto getStatusCodeName(status_codes statusCode) -> std::string {
         case status_codes::NETWORK_AUTHENTICATION_REQUIRED:
             return "Network Authentication Required";
         default:
-            return std::format(
-                "Not Standard - {}", getStatusCodeValue(statusCode));
+            return std::format("Not Standard - {}",
+                               std::to_underlying(statusCode));
     }
 }
 
 auto isStatusCodeInformational(status_codes statusCode) noexcept -> bool {
-    const auto val {getStatusCodeValue(statusCode)};
+    const auto val {std::to_underlying(statusCode)};
     return 100 <= val && val < 200;
 }
 
 auto isStatusCodeSuccess(status_codes statusCode) noexcept -> bool {
-    const auto val {getStatusCodeValue(statusCode)};
+    const auto val {std::to_underlying(statusCode)};
     return 200 <= val && val < 300;
 }
 
 auto isStatusCodeRedirectionError(status_codes statusCode) noexcept -> bool {
-    const auto val {getStatusCodeValue(statusCode)};
+    const auto val {std::to_underlying(statusCode)};
     return 300 <= val && val < 400;
 }
 
 auto isStatusCodeClientError(status_codes statusCode) noexcept -> bool {
-    const auto val {getStatusCodeValue(statusCode)};
+    const auto val {std::to_underlying(statusCode)};
     return 400 <= val && val < 500;
 }
 
 auto isStatusCodeServerError(status_codes statusCode) noexcept -> bool {
-    const auto val {getStatusCodeValue(statusCode)};
+    const auto val {std::to_underlying(statusCode)};
     return 500 <= val && val < 600;
 }
 } // namespace libcurl

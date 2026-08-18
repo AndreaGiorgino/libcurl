@@ -1,6 +1,7 @@
 #include <helpers.hxx>
 #include <libcurl/curl.hxx>
 #include <libjson/extra/decode.hxx>
+#include <utility>
 
 using libcurl::methods;
 using libcurl::request;
@@ -8,7 +9,9 @@ using libcurl::status_codes;
 
 auto TestGET_Parameters(int, char**) -> int {
     const request req {
-        helpers::API_URL + "/get", methods::GET, {},
+        helpers::API_URL + "/get",
+        methods::GET,
+        {},
         {{"param1", "value1"}, {"param2", "value2"}}
     };
 
@@ -18,8 +21,8 @@ auto TestGET_Parameters(int, char**) -> int {
     const auto res {future.get()};
 
     // check status code
-    helpers::checkeq(getStatusCodeValue(res.getStatusCode()),
-        getStatusCodeValue(status_codes::OK));
+    helpers::checkeq(std::to_underlying(res.getStatusCode()),
+                     std::to_underlying(status_codes::OK));
 
     const auto body {res.getBody()};
     const auto node {libjson::decode(body)};
