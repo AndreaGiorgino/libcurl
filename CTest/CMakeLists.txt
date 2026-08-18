@@ -30,6 +30,8 @@ set(
 
     # Requuest
     TestRequest_Ctors.cxx
+
+    # GET
     TestGET.cxx
 )
 
