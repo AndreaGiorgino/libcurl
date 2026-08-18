@@ -24,8 +24,8 @@ class response final {
     response(const response&) noexcept                     = default;
     auto operator =(const response&) noexcept -> response& = default;
 
-    response(response&&) noexcept                     = default;
-    auto operator =(response&&) noexcept -> response& = default;
+    response(response&& rhs) noexcept;
+    auto operator =(response&& rhs) noexcept -> response&;
 
     ~response(void) noexcept = default;
 
