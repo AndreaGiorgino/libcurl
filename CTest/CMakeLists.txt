@@ -36,6 +36,7 @@ set(
     TestRequest_GetSet.cxx
     TestRequest_Headers.cxx
     TestRequest_Parameters.cxx
+    TestRequest_PostFields.cxx
 
     # Response
     TestResponse_Ctors.cxx
