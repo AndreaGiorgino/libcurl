@@ -27,6 +27,9 @@ set(
 
     # Headers
     TestHeaders_GetName.cxx
+
+    # Requuest
+    TestRequest_Ctors.cxx
     TestGET.cxx
 )
 
