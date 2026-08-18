@@ -26,8 +26,7 @@ set(
 )
 
 create_test_sourcelist(
-    TEST_SOURCELIST
-    CommonCxxTests.cxx
+    TEST_SOURCELIST CommonCxxTests.cxx
     ${SOURCE_FILES}
 )
 
@@ -44,7 +43,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(
     CommonCxxTests
-    ${TEST_SOURCELIST}
+    ${TEST_SOURCELIST} helpers.cxx
 )
 
 set_target_properties(
