@@ -28,6 +28,9 @@ set(
     # Headers
     TestHeaders_GetName.cxx
 
+    # Status codes
+    TestStatusCodes_GetName.cxx
+
     # Requuest
     TestRequest_Ctors.cxx
     TestRequest_GetSet.cxx
