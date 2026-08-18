@@ -16,11 +16,13 @@ class request final {
     request(void) noexcept = default;
 
     request(std::string_view url, methods method = methods::GET,
-        std::initializer_list<std::pair<std::variant<headers, std::string_view>,
-            std::string_view>>
-            headers = {},
-        std::initializer_list<std::pair<std::string_view, std::string_view>>
-            params = {}) noexcept;
+            std::initializer_list<std::pair<
+                std::variant<headers, std::string_view>, std::string_view>>
+                headers = {},
+            std::initializer_list<std::pair<std::string_view, std::string_view>>
+                params = {},
+            std::initializer_list<std::pair<std::string_view, std::string_view>>
+                fields = {}) noexcept;
 
     request(const request&) noexcept                     = default;
     auto operator =(const request&) noexcept -> request& = default;
@@ -48,9 +50,8 @@ class request final {
      *
      * @param header The header to lookup
      */
-    [[nodiscard]] auto getHeader(
-        std::variant<headers, std::string_view> header) const noexcept
-        -> std::string;
+    [[nodiscard]] auto getHeader(std::variant<headers, std::string_view> header)
+        const noexcept -> std::string;
 
     /**
      * @brief Get the request headers collection
@@ -70,6 +71,20 @@ class request final {
      * @brief Get the request parameters collection
      */
     [[nodiscard]] auto getParameters(void) const noexcept
+        -> std::unordered_map<std::string, std::string>;
+
+    /**
+     * @brief Get the request post field value
+     *
+     * @param field The field to lookup
+     */
+    [[nodiscard]] auto getPostField(std::string_view field) const noexcept
+        -> std::string;
+
+    /**
+     * @brief Get the request post fields collection
+     */
+    [[nodiscard]] auto getPostFields(void) const noexcept
         -> std::unordered_map<std::string, std::string>;
 
     // ------------------------------
@@ -97,15 +112,16 @@ class request final {
      * @param value The value to assign to the header
      */
     auto setHeader(std::variant<headers, std::string_view> header,
-        std::string_view value) noexcept -> void;
+                   std::string_view value) noexcept -> void;
 
     /**
      * @brief Set/Add the request headers
      *
      * @param headers The values to assign to the headers
      */
-    auto setHeaders(std::initializer_list<
-        std::pair<std::variant<headers, std::string_view>, std::string_view>>
+    auto setHeaders(
+        std::initializer_list<std::pair<std::variant<headers, std::string_view>,
+                                        std::string_view>>
             headers) noexcept -> void;
 
     /**
@@ -126,6 +142,24 @@ class request final {
         std::initializer_list<std::pair<std::string_view, std::string_view>>
             params) noexcept -> void;
 
+    /**
+     * @brief Set/Add the request post field
+     *
+     * @param field The post field to set/add
+     * @param value The value to assign to the post field
+     */
+    auto setPostField(std::string_view field, std::string_view value) noexcept
+        -> void;
+
+    /**
+     * @brief Set/Add the request post fields
+     *
+     * @param fields The values to assign to the post fields
+     */
+    auto setPostFields(
+        std::initializer_list<std::pair<std::string_view, std::string_view>>
+            fields) noexcept -> void;
+
     // ------------------------------
    private: // members
     std::string _url {};
@@ -133,5 +167,6 @@ class request final {
 
     std::unordered_map<std::string, std::string> _headers {};
     std::unordered_map<std::string, std::string> _params {};
+    std::unordered_map<std::string, std::string> _postFields {};
 };
 } // namespace libcurl
