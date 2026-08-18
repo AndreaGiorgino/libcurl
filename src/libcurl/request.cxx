@@ -1,16 +1,20 @@
 #include <libcurl/request.hxx>
 
 namespace libcurl {
-request::request(std::string_view url, methods method,
+request::request(
+    std::string_view url, methods method,
     std::initializer_list<
         std::pair<std::variant<headers, std::string_view>, std::string_view>>
         headers,
+    std::initializer_list<std::pair<std::string_view, std::string_view>> params,
     std::initializer_list<std::pair<std::string_view, std::string_view>>
-        params) noexcept
+        fields) noexcept
     : _url(url),
       _method(method) {
     setHeaders(headers);
     setParameters(params);
+    setPostFields(fields);
+}
 }
 
 auto request::getUrl(void) const noexcept -> std::string {
@@ -21,9 +25,8 @@ auto request::getMethod(void) const noexcept -> methods {
     return _method;
 }
 
-auto request::getHeader(
-    std::variant<headers, std::string_view> header) const noexcept
-    -> std::string {
+auto request::getHeader(std::variant<headers, std::string_view> header)
+    const noexcept -> std::string {
     const auto name {std::visit(
         [](const auto& header) -> std::string {
             using clean_t = std::remove_cvref_t<decltype(header)>;
@@ -58,6 +61,19 @@ auto request::getParameters(void) const noexcept
     return _params;
 }
 
+auto request::getPostField(std::string_view field) const noexcept
+    -> std::string {
+    if (const auto it {_postFields.find(std::string {field})};
+        it != _postFields.end())
+        return it->second;
+    return {};
+}
+
+auto request::getPostFields(void) const noexcept
+    -> std::unordered_map<std::string, std::string> {
+    return _postFields;
+}
+
 auto request::setUrl(std::string_view url) noexcept -> void {
     _url = url;
 }
@@ -67,7 +83,7 @@ auto request::setMethod(methods method) noexcept -> void {
 }
 
 auto request::setHeader(std::variant<headers, std::string_view> header,
-    std::string_view value) noexcept -> void {
+                        std::string_view value) noexcept -> void {
     const auto name {std::visit(
         [](const auto& header) -> std::string {
             using clean_t = std::remove_cvref_t<decltype(header)>;
@@ -82,14 +98,15 @@ auto request::setHeader(std::variant<headers, std::string_view> header,
     _headers[name] = value;
 }
 
-auto request::setHeaders(std::initializer_list<
-    std::pair<std::variant<headers, std::string_view>, std::string_view>>
+auto request::setHeaders(
+    std::initializer_list<
+        std::pair<std::variant<headers, std::string_view>, std::string_view>>
         headers) noexcept -> void {
     for (const auto& [k, v] : headers) setHeader(k, v);
 }
 
-auto request::setParameter(
-    std::string_view param, std::string_view value) noexcept -> void {
+auto request::setParameter(std::string_view param,
+                           std::string_view value) noexcept -> void {
     const std::string name {param};
     _params[name] = value;
 }
@@ -98,5 +115,17 @@ auto request::setParameters(
     std::initializer_list<std::pair<std::string_view, std::string_view>>
         params) noexcept -> void {
     for (const auto& [k, v] : params) setParameter(k, v);
+}
+
+auto request::setPostField(std::string_view field,
+                           std::string_view value) noexcept -> void {
+    const std::string name {field};
+    _postFields[name] = value;
+}
+
+auto request::setPostFields(
+    std::initializer_list<std::pair<std::string_view, std::string_view>>
+        fields) noexcept -> void {
+    for (const auto& [k, v] : fields) setPostField(k, v);
 }
 } // namespace libcurl
