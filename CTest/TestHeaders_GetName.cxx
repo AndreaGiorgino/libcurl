@@ -200,7 +200,7 @@ auto TestHeaders_GetName(int, char**) -> int {
     helpers::checkeq(libcurl::getHeaderName(headers::ACCEPT_CH), "Accept-CH");
 
     try {
-        (void)getHeaderName((headers)(1 << 30));
+        (void)getHeaderName((headers)(999));
         return 1;
     } catch (...) {
         return 0;

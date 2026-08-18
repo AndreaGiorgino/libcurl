@@ -14,7 +14,7 @@ auto TestMethods_GetName(int, char**) -> int {
     helpers::checkeq(libcurl::getMethodName(methods::TRACE), "TRACE");
 
     try {
-        (void)libcurl::getMethodName((methods)(1 << 30));
+        (void)libcurl::getMethodName((methods)(999));
         return 1;
     } catch (...) {
         return 0;
