@@ -1,5 +1,6 @@
+#include <format>
 #include <libcurl/headers.hxx>
-#include <stdexcept>
+#include <utility>
 
 namespace libcurl {
 auto getHeaderName(headers header) -> std::string {
@@ -216,8 +217,9 @@ auto getHeaderName(headers header) -> std::string {
             return "Attribution-Reporting-Register-Trigger";
         case headers::ACCEPT_CH:
             return "Accept-CH";
-        default: // unreachable
-            throw std::logic_error("Header not implemented");
+        default:
+            return std::format("Not Standard - {}",
+                               std::to_underlying(statusCode));
     }
 }
 } // namespace libcurl
