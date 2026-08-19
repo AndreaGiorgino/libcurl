@@ -218,8 +218,7 @@ auto getHeaderName(headers header) -> std::string {
         case headers::ACCEPT_CH:
             return "Accept-CH";
         default:
-            return std::format("Not Standard - {}",
-                               std::to_underlying(statusCode));
+            return std::format("Not-Standard-{}", std::to_underlying(header));
     }
 }
 } // namespace libcurl
