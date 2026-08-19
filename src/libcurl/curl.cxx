@@ -125,6 +125,8 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
  * @param req The request
  * @param curl The initialized CURL object
  * @return The composed url
+ *
+ * @throws std::runtime_error If a parameter cannot be escaped
  */
 [[nodiscard]] auto composeUrl(const request& req, CURL* curl) -> std::string {
     std::string composedUrl {req.getUrl()};
@@ -170,6 +172,10 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
  * @param req The request
  * @param curl The initialized CURL object
  * @return The composed post fields
+ *
+ * @throws std::runtime_error If the header 'Content-Type: application/json' is
+ * present but more than one post field has been provided
+ * @throws std::runtime_error If a post field cannot be escaped
  */
 [[nodiscard]] auto composePostFields(const auto& req, CURL* curl)
     -> std::string {
@@ -179,7 +185,7 @@ auto writeHeaderCallback(char* buffer, size_t size, size_t nitems,
 
     // check for json content
     if (req.getHeader(headers::CONTENT_TYPE) == "application/json"
-        && postFields.size() != 0) {
+        && postFields.size() > 1) {
         cleanup(curl);
         throw std::runtime_error(
             std::format("Only one post field is expected when header "
@@ -245,7 +251,7 @@ auto curl(request req) -> std::future<response> {
 
             if (!curl) {
                 cleanup(curl);
-                throw std::runtime_error("Cannot initialize curl");
+                throw std::runtime_error("Cannot initialize CURL object");
             }
 
             // request url setup
