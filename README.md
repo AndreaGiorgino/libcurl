@@ -1,6 +1,6 @@
 # libcurl
 
- Cpp23 static library to make http requests
+ Cpp23 wrapper for [curl](https://curl.se)
 
 > [!IMPORTANT]
 > Since this library is still in development, it may not work correctly or some
