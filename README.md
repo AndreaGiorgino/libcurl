@@ -1,6 +1,6 @@
 # libcurl
 
- Cpp23 wrapper for [curl](https://curl.se)
+[curl](https://curl.se) interface library in Cpp23
 
 > [!IMPORTANT]
 > Since this library is still in development, it may not work correctly or some
